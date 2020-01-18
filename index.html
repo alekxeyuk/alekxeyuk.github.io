@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WebSocket demo</title>
+    <style type="text/css">
+        body {
+            font-family: "Courier New", sans-serif;
+            /* text-align: center; */
+        }
+
+        .buttons {
+            font-size: 4em;
+            display: flex;
+            justify-content: center;
+        }
+
+        .button,
+        .value {
+            line-height: 1;
+            padding: 2rem;
+            margin: 2rem;
+            border: medium solid;
+            min-height: 1em;
+            min-width: 1em;
+        }
+
+        .button {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .minus {
+            color: red;
+        }
+
+        .plus {
+            color: green;
+        }
+
+        .value {
+            min-width: 2em;
+        }
+
+        .state {
+            font-size: 2em;
+        }
+
+        .form__input {
+            font-family: 'Roboto', sans-serif;
+            color: #333;
+            font-size: 1.2rem;
+            margin: 0 10px;
+            padding: 1.5rem 2rem;
+            border-radius: 0.2rem;
+            background-color: rgb(255, 255, 255);
+            border: none;
+            width: 90%;
+            display: block;
+            border-bottom: 0.3rem solid transparent;
+            transition: all 0.3s;
+        }
+
+        .form__group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .button4 {
+            display: inline-block;
+            padding: 0.3em 1.2em;
+            /* margin: 0 0.1em 0.1em 0; */
+            border: 0.16em solid rgba(255, 255, 255, 0);
+            border-radius: 2em;
+            box-sizing: border-box;
+            text-decoration: none;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 300;
+            color: #FFFFFF;
+            text-shadow: 0 0.04em 0.04em rgba(0, 0, 0, 0.35);
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .button4:hover {
+            border-color: rgba(255, 255, 255, 1);
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox */
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .game_input {
+            width: 100%;
+        }
+    </style>
+
+    <link rel="stylesheet" type="text/css" href="https://www.chartjs.org/docs/latest/gitbook/style.css">
+    <link rel="stylesheet" type="text/css"
+        href="https://www.chartjs.org/docs/latest/gitbook/gitbook-plugin-search-plus/search.css">
+    <link rel="stylesheet" type="text/css"
+        href="https://www.chartjs.org/docs/latest/gitbook/gitbook-plugin-highlight/website.css">
+    <link rel="stylesheet" type="text/css"
+        href="https://www.chartjs.org/docs/latest/gitbook/gitbook-plugin-fontsettings/website.css">
+    <link rel="stylesheet" type="text/css" href="https://www.chartjs.org/docs/latest/style.css">
+</head>
+
+<body>
+    <div class="book font-size-2 font-family-1 color-theme-2">
+        <div class="book-body">
+            <div class="body-inner">
+                <div class="page-wrapper">
+                    <div class="page-inner">
+                        <div class="book-search-results">
+                            <div class="search-noresults">
+                                <section class="normal markdown-section">
+                                    <h1 id="bar"><strong style="color: red;">Connecting!</strong> Не готов к работе.
+                                    </h1>
+                                    <p>
+                                        Голосование за channel points. Создатель - saliensgod. После внесения изменений
+                                        необходимо сохранить их в Db. Id добавляются автоматически если в панели твича
+                                        добавить/активировать награду.
+                                    </p>
+                                    <p></p>
+                                    <div class="chartjs-wrapper">
+                                        <canvas id="myChart" class="chartjs" width="770" height="385"
+                                            style="display: block; width: 770px; height: 385px;"></canvas>
+                                    </div>
+                                    <p></p>
+                                    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+                                    <h4 style="color: whitesmoke; text-align: center; margin-bottom: 0px;">UUID and
+                                        price</h4>
+                                    <div class="form__group" style="display: flex;justify-content: space-evenly;"
+                                        id="table_control">
+                                        <button class="add_reward button4" style="background-color: green;">Add Reward
+                                            Id</button>
+                                        <button class="pop_reward button4" style="background-color: red;">Del Reward
+                                            Id</button>
+                                    </div>
+                                    <div class="input_table">
+                                        <!-- <div class="form__group parse_me">
+                                            <input type="text" class="form__input" placeholder="point's uuid" />
+                                            <input type="number" class="form__input" placeholder="point's price" />
+                                        </div>
+                                        <div class="form__group parse_me">
+                                            <input type="text" class="form__input" placeholder="point's uuid" />
+                                            <input type="number" class="form__input" placeholder="point's price" />
+                                        </div> -->
+                                    </div>
+                                    <div class="form__group" style="display: flex;justify-content: space-evenly;"
+                                        id="table_control">
+                                        <button class="upd_db button4" style="background-color: green;">Save to
+                                            DataBase</button>
+                                    </div>
+                                    <h4 style="color: whitesmoke; text-align: center; margin-bottom: 0px;">Games</h4>
+                                    <div class="form__group" style="display: flex;justify-content: space-evenly;"
+                                        id="table_control">
+                                        <button class="add_game button4" style="background-color: green;">Add
+                                            Game</button>
+                                        <button class="pop_game button4" style="background-color: red;">Del
+                                            Game</button>
+                                    </div>
+                                    <div class="input_table">
+                                        <div class="form__group game_parse_me">
+                                            <input type="text" class="form__input game_input" placeholder="game name" />
+                                        </div>
+                                        <div class="form__group game_parse_me">
+                                            <input type="text" class="form__input game_input" placeholder="game name" />
+                                        </div>
+                                    </div>
+                                    <div class="form__group" style="display: flex;justify-content: space-evenly;"
+                                        id="table_control">
+                                        <button class="upd_game_db button4" style="background-color: green;">Save to
+                                            DataBase</button>
+                                    </div>
+                                    <button class="request button4" style="background-color: yellowgreen;">Test</button>
+                                    <button class="dudos button4" style="background-color: yellowgreen;">Test</button>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div hidden>
+        <div class="buttons">
+            <div class="minus button">-</div>
+            <div class="value">?</div>
+            <div class="plus button">+</div>
+        </div>
+        <div class="state">
+            <span class="users">?</span> online
+        </div>
+        <br>
+        <div id='bar_chart'>
+            <span>
+                <strong style="color: green;">Connected!</strong> Готов к работе.
+            </span>
+            <br>
+            <div class="input_table">
+                <button class="pop_reward">Del Reward Id</button>
+                <button class="add_reward">Add Reward Id</button>
+                <ul id="ul-table">
+                    <li id="li-0">
+                        <input type="text" name="uuid" placeholder="uuid">
+                        <input type="number" name="reward" placeholder="number">
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
+    <script>
+        const randomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
+        const randomByte = () => randomNumber(0, 255)
+        const randomPercent = () => (randomNumber(50, 100) * 0.01).toFixed(2)
+        const randomCssRgba = () => `rgba(${[randomByte(), randomByte(), randomByte(), randomPercent()].join(',')})`
+        var ctx = document.getElementById('myChart');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Red', 'Blue'],
+                datasets: [{
+                    label: '# of Votes',
+                    data: [1, 1],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)',
+                        `rgba(${[randomByte(), randomByte(), randomByte(), randomPercent()].join(',')})`,
+                        `rgba(${[randomByte(), randomByte(), randomByte(), randomPercent()].join(',')})`,
+                        `rgba(${[randomByte(), randomByte(), randomByte(), randomPercent()].join(',')})`
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        `rgba(${[randomByte(), randomByte(), randomByte(), randomPercent()].join(',')})`,
+                        `rgba(${[randomByte(), randomByte(), randomByte(), randomPercent()].join(',')})`,
+                        `rgba(${[randomByte(), randomByte(), randomByte(), randomPercent()].join(',')})`
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+    </script>
+    <script>
+        var points_db = {},
+            games_db = {},
+            games_count = 2,
+            games_keys = {};
+        votes = 0;
+        var minus = document.querySelector('.minus'),
+            plus = document.querySelector('.plus'),
+            request = document.querySelector('.request'),
+            dudos = document.querySelector('.dudos'),
+            add_reward = document.querySelector('.add_reward'),
+            pop_reward = document.querySelector('.pop_reward'),
+            add_game = document.querySelector('.add_game'),
+            pop_game = document.querySelector('.pop_game'),
+            upd_db = document.querySelector('.upd_db'),
+            upd_game_db = document.querySelector('.upd_game_db'),
+            value = document.querySelector('.value'),
+            users = document.querySelector('.users'),
+            websocket = new WebSocket("wss://pubsub-edge.twitch.tv/v1");
+        minus.onclick = function (event) {
+            websocket.send(JSON.stringify({ type: 'minus' }));
+        }
+        plus.onclick = function (event) {
+            websocket.send(JSON.stringify({ type: 'plus' }));
+        }
+        request.onclick = (event) => {
+            console.log('Sent request');
+            request.disabled = true;
+            websocket.send(JSON.stringify({ type: 'REQUEST' }));
+        }
+        dudos.onclick = (event) => {
+            console.log('Sent DUDOS');
+            request.disabled = true;
+            websocket.send(JSON.stringify({ type: 'DUDOS' }));
+        }
+        add_reward.onclick = (event) => {
+            let database = document.querySelector('.input_table');
+            let entry = document.createElement('div');
+            // entry.id = 'li-' + database.getElementsByTagName("div").length;
+            // entry.id = 'parse_me'
+            entry.className = 'form__group parse_me';
+            entry.innerHTML = '<input type="text" class="form__input" placeholder="points uuid" /> <input type="number" class="form__input" placeholder="points price" />';
+            database.append(entry);
+        }
+        pop_reward.onclick = (event) => {
+            let listItems = document.querySelector('.input_table').getElementsByTagName("div");
+            if (listItems.length === 0) return;
+
+            var last = listItems[listItems.length - 1];
+            last.parentNode.removeChild(last);
+        }
+        add_game.onclick = (event) => {
+            let gameList = document.querySelectorAll('.input_table')[1];
+            let listItems = gameList.getElementsByTagName("div");
+            if (listItems.length === 9) return;
+            let entry = document.createElement('div');
+            entry.className = 'form__group game_parse_me';
+            entry.innerHTML = '<input type="text" class="form__input game_input" placeholder="game name" />';
+            gameList.append(entry);
+        }
+        pop_game.onclick = (event) => {
+            let listItems = document.querySelectorAll('.input_table')[1].getElementsByTagName("div");
+            if (listItems.length === 0) return;
+
+            var last = listItems[listItems.length - 1];
+            last.parentNode.removeChild(last);
+        }
+        upd_db.onclick = (event) => {
+            populateDb();
+        }
+        upd_game_db.onclick = (event) => {
+            games_db = {};
+            document.querySelectorAll('.game_parse_me').forEach((el) => {
+                el.querySelectorAll('.form__input').forEach((in_el) => {
+                    if (in_el.value) {
+                        games_db[in_el.value] = 1;
+                    }
+                })
+            })
+            console.log(games_db);
+            myChart.data.labels = Object.keys(games_db);
+            myChart.data.datasets[0].data = Object.values(games_db)
+            myChart.update();
+            games_count = myChart.data.datasets[0].data.length;
+            games_keys = myChart.data.labels;
+        }
+        function timeout() {
+            websocket.send(JSON.stringify({ type: 'PING' }))
+        }
+
+        websocket.onopen = function () {
+            websocket.send(JSON.stringify({
+                type: "LISTEN",
+                nonce: "b9UBibWvXFIfnOF4iloSzxaBZhFPm3",
+                data: {
+                    topics: [
+                        "community-points-channel-v1.26819117"
+                    ],
+                    auth_token: "gzfc7ctvldw5ib6emp8qzqvq0ais9y"
+                }
+            }))
+
+            window.setInterval(function () {
+                timeout();
+            }, 10000);
+            window.setInterval(function () {
+                myChart.data.datasets[0].data = Object.values(games_db)
+                myChart.data.datasets[0].label = `${votes} Голосов`;
+                myChart.update();
+            }, 2000);
+        };
+
+        function getRandomInt(max) {
+            return Math.floor(Math.random() * Math.floor(max));
+        }
+
+        function populateDb() {
+            points_db = {};
+            document.querySelectorAll('.parse_me').forEach((el) => {
+                var temp = [];
+                el.querySelectorAll('.form__input').forEach((in_el) => {
+                    // console.log(in_el.value)
+                    if (in_el.value) {
+                        temp.push(in_el.value);
+                    }
+                })
+                if (temp.length === 2) {
+                    points_db[temp[0]] = parseInt(temp[1]);
+                }
+            })
+            console.log(points_db);
+        }
+
+        const regex = /d":{"id":"(\S+)","c/m;
+        const regex_2 = /ut":"(.+)",/m;
+
+        websocket.addEventListener('message', function (event) {
+            data = JSON.parse(event.data);
+            switch (data.type) {
+                case 'state':
+                    value.textContent = data.value;
+                    myChart.data.datasets[0].data[getRandomInt(2)] += 1;
+                    myChart.update();
+                    break;
+                case 'users':
+                    users.textContent = (
+                        data.count.toString() + " user" +
+                        (data.count == 1 ? "" : "s"));
+                    break;
+                case 'PONG':
+                    break;
+                case 'RESPONSE':
+                    // document.getElementById('bar_chart').removeAttribute("hidden");
+                    document.getElementById('bar').innerHTML = '<strong style="color: green;">Connected!</strong> Готов к работе.';
+                    break;
+                case 'MESSAGE':
+                    message = JSON.parse(data.data.message);
+                    if (message.type === "reward-redeemed") {
+                        let id = message.data.redemption.reward.id;
+                        if (id in points_db) {
+                            choice = parseInt(message.data.redemption.user_input[0]);
+                            if (!isNaN(choice)) {
+                                choice = Math.min(Math.max(choice, 1), games_count);
+                                games_db[games_keys[choice - 1]] += points_db[id];
+                                votes += 1;
+                            }
+                        }
+                    }
+                    else if (message.type === "custom-reward-created" || message.type === "custom-reward-updated") {
+                        var temp = {}
+                        document.querySelectorAll('.parse_me').forEach((el) => {
+                            in_el = el.querySelector('.form__input')
+                            if (in_el.value) {
+                                temp[in_el.value] = 1;
+                            }
+                        })
+                        let id = message.type === "custom-reward-created" ? message.data.new_reward.id : message.data.updated_reward.id;
+
+                        if (!(id in temp)) {
+                            // console.log(id)
+                            let database = document.querySelector('.input_table');
+                            let entry = document.createElement('div');
+                            entry.className = 'form__group parse_me';
+                            entry.innerHTML = `<input type="text" class="form__input" placeholder="points uuid" value=${id} /> <input type="number" class="form__input" placeholder="points price" value="1" />`;
+                            database.append(entry);
+                        }
+                    }
+                    break;
+                default:
+                    console.error(
+                        "unsupported event", data);
+            }
+        });
+    </script>
+</body>
+</html>
