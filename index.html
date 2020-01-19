@@ -111,6 +111,8 @@
     <link rel="stylesheet" type="text/css"
         href="https://www.chartjs.org/docs/latest/gitbook/gitbook-plugin-fontsettings/website.css">
     <link rel="stylesheet" type="text/css" href="https://www.chartjs.org/docs/latest/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/semantic.min.css" />
 </head>
 
 <body>
@@ -146,14 +148,6 @@
                                             Id</button>
                                     </div>
                                     <div class="input_table">
-                                        <!-- <div class="form__group parse_me">
-                                            <input type="text" class="form__input" placeholder="point's uuid" />
-                                            <input type="number" class="form__input" placeholder="point's price" />
-                                        </div>
-                                        <div class="form__group parse_me">
-                                            <input type="text" class="form__input" placeholder="point's uuid" />
-                                            <input type="number" class="form__input" placeholder="point's price" />
-                                        </div> -->
                                     </div>
                                     <div class="form__group" style="display: flex;justify-content: space-evenly;"
                                         id="table_control">
@@ -181,8 +175,10 @@
                                         <button class="upd_game_db button4" style="background-color: green;">Save to
                                             DataBase</button>
                                     </div>
-                                    <button class="request button4" style="background-color: yellowgreen;">Test</button>
-                                    <button class="dudos button4" style="background-color: yellowgreen;">Test</button>
+                                    <div hidden>
+                                        <button class="request button4" style="background-color: yellowgreen;">Test</button>
+                                        <button class="dudos button4" style="background-color: yellowgreen;">Test</button>
+                                    </div>
                                 </section>
                             </div>
                         </div>
@@ -191,34 +187,8 @@
             </div>
         </div>
     </div>
-    <div hidden>
-        <div class="buttons">
-            <div class="minus button">-</div>
-            <div class="value">?</div>
-            <div class="plus button">+</div>
-        </div>
-        <div class="state">
-            <span class="users">?</span> online
-        </div>
-        <br>
-        <div id='bar_chart'>
-            <span>
-                <strong style="color: green;">Connected!</strong> Готов к работе.
-            </span>
-            <br>
-            <div class="input_table">
-                <button class="pop_reward">Del Reward Id</button>
-                <button class="add_reward">Add Reward Id</button>
-                <ul id="ul-table">
-                    <li id="li-0">
-                        <input type="text" name="uuid" placeholder="uuid">
-                        <input type="number" name="reward" placeholder="number">
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
     <script>
         const randomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
         const randomByte = () => randomNumber(0, 255)
@@ -269,14 +239,14 @@
         });
     </script>
     <script>
+        alertify.set('notifier', 'position', 'top-center');
+        alertify.set('notifier', 'delay', 3);
         var points_db = {},
             games_db = {},
             games_count = 2,
             games_keys = {};
         votes = 0;
-        var minus = document.querySelector('.minus'),
-            plus = document.querySelector('.plus'),
-            request = document.querySelector('.request'),
+        var request = document.querySelector('.request'),
             dudos = document.querySelector('.dudos'),
             add_reward = document.querySelector('.add_reward'),
             pop_reward = document.querySelector('.pop_reward'),
@@ -284,15 +254,7 @@
             pop_game = document.querySelector('.pop_game'),
             upd_db = document.querySelector('.upd_db'),
             upd_game_db = document.querySelector('.upd_game_db'),
-            value = document.querySelector('.value'),
-            users = document.querySelector('.users'),
             websocket = new WebSocket("wss://pubsub-edge.twitch.tv/v1");
-        minus.onclick = function (event) {
-            websocket.send(JSON.stringify({ type: 'minus' }));
-        }
-        plus.onclick = function (event) {
-            websocket.send(JSON.stringify({ type: 'plus' }));
-        }
         request.onclick = (event) => {
             console.log('Sent request');
             request.disabled = true;
@@ -306,8 +268,6 @@
         add_reward.onclick = (event) => {
             let database = document.querySelector('.input_table');
             let entry = document.createElement('div');
-            // entry.id = 'li-' + database.getElementsByTagName("div").length;
-            // entry.id = 'parse_me'
             entry.className = 'form__group parse_me';
             entry.innerHTML = '<input type="text" class="form__input" placeholder="points uuid" /> <input type="number" class="form__input" placeholder="points price" />';
             database.append(entry);
@@ -336,14 +296,37 @@
             last.parentNode.removeChild(last);
         }
         upd_db.onclick = (event) => {
-            populateDb();
+            points_db = {};
+            err = false;
+            document.querySelectorAll('.parse_me').forEach((el) => {
+                var temp = [];
+                el.querySelectorAll('.form__input').forEach((in_el) => {
+                    if (in_el.value) {
+                        temp.push(in_el.value);
+                    }
+                })
+                if (temp.length === 2) {
+                    points_db[temp[0]] = parseInt(temp[1]);
+                } else {
+                    err = true;
+                }
+            })
+            console.log(points_db);
+            if (err) {
+                alertify.error('Empty Fields');
+            } else {
+                alertify.success(`Saved`);
+            }
         }
         upd_game_db.onclick = (event) => {
             games_db = {};
+            err = false;
             document.querySelectorAll('.game_parse_me').forEach((el) => {
                 el.querySelectorAll('.form__input').forEach((in_el) => {
                     if (in_el.value) {
                         games_db[in_el.value] = 1;
+                    } else {
+                        err = true;
                     }
                 })
             })
@@ -353,12 +336,26 @@
             myChart.update();
             games_count = myChart.data.datasets[0].data.length;
             games_keys = myChart.data.labels;
+            if (err) {
+                alertify.error('Empty Fields');
+            } else {
+                alertify.success(`Saved`);
+            }
         }
-        function timeout() {
-            websocket.send(JSON.stringify({ type: 'PING' }))
+
+        function pingPong() {
+            websocket.send(JSON.stringify({ type: 'PING' }));
+        }
+
+        function chartUpdate() {
+            myChart.data.datasets[0].data = Object.values(games_db);
+            myChart.data.datasets[0].label = `${votes} Голосов`;
+            myChart.update();
         }
 
         websocket.onopen = function () {
+            alertify.success('Connection was successfully established');
+            pingPong();
             websocket.send(JSON.stringify({
                 type: "LISTEN",
                 nonce: "b9UBibWvXFIfnOF4iloSzxaBZhFPm3",
@@ -368,15 +365,13 @@
                     ],
                     auth_token: "gzfc7ctvldw5ib6emp8qzqvq0ais9y"
                 }
-            }))
+            }));
 
             window.setInterval(function () {
-                timeout();
-            }, 10000);
+                pingPong();
+            }, 20000);
             window.setInterval(function () {
-                myChart.data.datasets[0].data = Object.values(games_db)
-                myChart.data.datasets[0].label = `${votes} Голосов`;
-                myChart.update();
+                chartUpdate();
             }, 2000);
         };
 
@@ -384,43 +379,12 @@
             return Math.floor(Math.random() * Math.floor(max));
         }
 
-        function populateDb() {
-            points_db = {};
-            document.querySelectorAll('.parse_me').forEach((el) => {
-                var temp = [];
-                el.querySelectorAll('.form__input').forEach((in_el) => {
-                    // console.log(in_el.value)
-                    if (in_el.value) {
-                        temp.push(in_el.value);
-                    }
-                })
-                if (temp.length === 2) {
-                    points_db[temp[0]] = parseInt(temp[1]);
-                }
-            })
-            console.log(points_db);
-        }
-
-        const regex = /d":{"id":"(\S+)","c/m;
-        const regex_2 = /ut":"(.+)",/m;
-
         websocket.addEventListener('message', function (event) {
             data = JSON.parse(event.data);
             switch (data.type) {
-                case 'state':
-                    value.textContent = data.value;
-                    myChart.data.datasets[0].data[getRandomInt(2)] += 1;
-                    myChart.update();
-                    break;
-                case 'users':
-                    users.textContent = (
-                        data.count.toString() + " user" +
-                        (data.count == 1 ? "" : "s"));
-                    break;
                 case 'PONG':
                     break;
                 case 'RESPONSE':
-                    // document.getElementById('bar_chart').removeAttribute("hidden");
                     document.getElementById('bar').innerHTML = '<strong style="color: green;">Connected!</strong> Готов к работе.';
                     break;
                 case 'MESSAGE':
@@ -437,22 +401,22 @@
                         }
                     }
                     else if (message.type === "custom-reward-created" || message.type === "custom-reward-updated") {
-                        var temp = {}
+                        var temp = {};
                         document.querySelectorAll('.parse_me').forEach((el) => {
-                            in_el = el.querySelector('.form__input')
+                            in_el = el.querySelector('.form__input');
                             if (in_el.value) {
                                 temp[in_el.value] = 1;
                             }
                         })
                         let id = message.type === "custom-reward-created" ? message.data.new_reward.id : message.data.updated_reward.id;
-
+                        let title = message.type === "custom-reward-created" ? message.data.new_reward.title : message.data.updated_reward.title;
                         if (!(id in temp)) {
-                            // console.log(id)
                             let database = document.querySelector('.input_table');
                             let entry = document.createElement('div');
                             entry.className = 'form__group parse_me';
                             entry.innerHTML = `<input type="text" class="form__input" placeholder="points uuid" value=${id} /> <input type="number" class="form__input" placeholder="points price" value="1" />`;
                             database.append(entry);
+                            alertify.success(`Found id for ${title}`);
                         }
                     }
                     break;
